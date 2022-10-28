@@ -21,12 +21,12 @@ Route::post('/sanctum/token', function (Request $request) {
     $request->validate([
         'email' => 'required|email',
         'password' => 'required',
-//            'device_name' => 'required',
+        'device_name' => 'required',
     ]);
 
     $user = User::where('email', $request->email)->first();
 
-    if (! $user || ! Hash::check($request->password, $user->password)) {
+    if (!$user) {
         throw ValidationException::withMessages([
             'email' => ['The provided credentials are incorrect.'],
         ]);
@@ -35,7 +35,7 @@ Route::post('/sanctum/token', function (Request $request) {
     return $user->createToken($request->device_name)->plainTextToken;
 });
 
-Route::middleware(['auth:sanctum'])->group(function(){
+Route::middleware(['auth:sanctum'])->group(function () {
     Route::get('/user', [\App\Http\Controllers\UserController::class, 'index']);
 });
 
