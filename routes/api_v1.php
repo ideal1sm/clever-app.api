@@ -1,10 +1,9 @@
 <?php
 
+use App\Http\Controllers\AuthController;
 use App\Models\User;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Route;
-use Illuminate\Validation\ValidationException;
 
 /*
 |--------------------------------------------------------------------------
@@ -17,25 +16,14 @@ use Illuminate\Validation\ValidationException;
 |
 */
 
-Route::post('/sanctum/token', function (Request $request) {
-    $request->validate([
-        'email' => 'required|email',
-        'password' => 'required',
-        'device_name' => 'required',
-    ]);
-
-    $user = User::where('email', $request->email)->first();
-
-    if (!$user) {
-        throw ValidationException::withMessages([
-            'email' => ['The provided credentials are incorrect.'],
-        ]);
-    }
-
-    return $user->createToken($request->device_name)->plainTextToken;
+Route::prefix("sanctum")->group(function () {
+    Route::post("register", [AuthController::class, "register"]);
+    Route::post("token", [AuthController::class, "token"]);
 });
 
 Route::middleware(['auth:sanctum'])->group(function () {
-    Route::get('/user', [\App\Http\Controllers\UserController::class, 'index']);
+    Route::get('/user/{id}', function (Request $request) {
+        return response()->json(['user' => User::whereId($request->id)->first()]);
+    });
 });
 
